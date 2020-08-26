@@ -40,7 +40,7 @@ class BasketToItemController extends AbstractFOSRestController
   }
 
   /**
-   * Erstellt eine Warenkorb zu Artikel Entität und  somit wird quasi ein Artikel dem Warenkorb hinzugefügt
+   * Erstellt eine Warenkorb zu Artikel Entität und somit wird quasi ein Artikel dem Warenkorb hinzugefügt
    *
    * @Rest\Post("/basket-to-item")
    *
