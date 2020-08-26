@@ -33,7 +33,7 @@ class Item //implements CreatedModifiedInterface
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity=BasketToItem::class, mappedBy="item")
+     * @ORM\OneToMany(targetEntity=BasketToItem::class, mappedBy="item", fetch="EXTRA_LAZY")
      */
     private $basketToItemList;
 
@@ -78,27 +78,4 @@ class Item //implements CreatedModifiedInterface
     {
         return $this->basketToItemList;
     }
-
-    // public function addBasketToItemList(BasketToItem $basketToItem): self
-    // {
-    //     if (!$this->basketToItemList->contains($basketToItem)) {
-    //         $this->basketToItemList[] = $basketToItem;
-    //         $basketToItem->setItem($this);
-    //     }
-
-    //     return $this;
-    // }
-
-    // public function removeBasketToItemList(BasketToItem $basketToItem): self
-    // {
-    //     if ($this->basketToItemList->contains($basketToItem)) {
-    //         $this->basketToItemList->removeElement($basketToItem);
-    //         // set the owning side to null (unless already changed)
-    //         if ($basketToItem->getItem() === $this) {
-    //             $basketToItem->setItem(null);
-    //         }
-    //     }
-
-    //     return $this;
-    // }
 }

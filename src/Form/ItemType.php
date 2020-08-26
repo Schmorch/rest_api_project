@@ -2,7 +2,7 @@
 namespace App\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use App\Entity\Item;
 class ItemType extends AbstractType
@@ -10,12 +10,11 @@ class ItemType extends AbstractType
   public function buildForm(FormBuilderInterface $builder, array $options)
   {
     $builder
-      ->add('name')
-      ->add('description')
-      ->add('basketToItemList')
-      ->add('created')
-      ->add('modified')
-      ->add('save', SubmitType::class)
+      ->add('name', Type\TextType::class)
+      ->add('description', Type\TextType::class)
+      ->add('created', Type\DateTimeType::class)
+      ->add('modified', Type\DateTimeType::class)
+      ->add('save', Type\SubmitType::class)
     ;
   }
   public function configureOptions(OptionsResolver $resolver)

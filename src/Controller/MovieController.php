@@ -7,6 +7,7 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use App\Entity\Movie;
 use App\Form\MovieType;
+
 /**
  * Movie controller.
  * @Route("/api", name="api_")

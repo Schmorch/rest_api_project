@@ -23,13 +23,7 @@ class Basket //implements CreatedModifiedInterface
     private $id;
 
     /**
-     * @ORM\OneToOne(targetEntity=User::class, inversedBy="basket", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $user;
-
-    /**
-     * @ORM\OneToMany(targetEntity=BasketToItem::class, mappedBy="basket")
+     * @ORM\OneToMany(targetEntity=BasketToItem::class, mappedBy="basket", fetch="EXTRA_LAZY")
      */
     private $basketToItemList;
 
@@ -43,18 +37,6 @@ class Basket //implements CreatedModifiedInterface
         return $this->id;
     }
 
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
     /**
      * @return Collection|BasketToItem[]
      */
@@ -62,27 +44,4 @@ class Basket //implements CreatedModifiedInterface
     {
         return $this->basketToItemList;
     }
-
-    // public function addItem(BasketToItem $basketToItem): self
-    // {
-    //     if (!$this->basketToItemList->contains($basketToItem)) {
-    //         $this->basketToItemList[] = $basketToItem;
-    //         $basketToItem->setBasket($this);
-    //     }
-
-    //     return $this;
-    // }
-
-    // public function removeBasketToItemList(BasketToItem $basketToItem): self
-    // {
-    //     if ($this->basketToItemList->contains($basketToItem)) {
-    //         $this->basketToItemList->removeElement($basketToItem);
-    //         // set the owning side to null (unless already changed)
-    //         if ($basketToItem->getBasket() === $this) {
-    //             $basketToItem->setBasket(null);
-    //         }
-    //     }
-
-    //     return $this;
-    // }
 }

@@ -27,11 +27,6 @@ class User //implements CreatedModifiedInterface
      */
     private $name;
 
-    /**
-     * @ORM\OneToOne(targetEntity=Basket::class, mappedBy="user", cascade={"persist", "remove"})
-     */
-    private $basket;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -45,23 +40,6 @@ class User //implements CreatedModifiedInterface
     public function setName(?string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getBasket(): ?Basket
-    {
-        return $this->basket;
-    }
-
-    public function setBasket(Basket $basket): self
-    {
-        $this->basket = $basket;
-
-        // set the owning side of the relation if necessary
-        if ($basket->getUser() !== $this) {
-            $basket->setUser($this);
-        }
 
         return $this;
     }

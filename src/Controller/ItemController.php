@@ -1,41 +1,48 @@
 <?php
 namespace App\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+
+use App\Entity\Item;
+use App\Form\ItemType;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use App\Entity\Item;
-use App\Form\ItemType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
 /**
- * Item controller.
+ * Artikel Controller
+ *
  * @Route("/api", name="api_")
  */
 class ItemController extends AbstractFOSRestController
 {
   /**
-   * Lists all Items.
+   * Gibt alle Artikel zurück
+   *
    * @Rest\Get("/items")
    *
    * @return Response
    */
-  public function getAllAction()
+  public function getAllAction(): Response
   {
     $repository = $this->getDoctrine()->getRepository(Item::class);
-    $items = $repository->findall();
+    $items = $repository->findAll();
+
     return $this->handleView($this->view($items));
   }
 
   /**
+   * Gibt einen Artikel zurück
+   *
    * @Rest\Get("/item/{id}")
    *
    * @return Response
    */
-  public function getOneAction($id)
+  public function getOneAction($id): Response
   {
-    $repository = $this->getDoctrine()->getRepository(Item::class);
-    $item = $repository->find($id);
-    if(empty($item)) {
+    $entityManager = $this->getDoctrine()->getManager();
+    $item = $entityManager->find(Item::class, $id);
+    if (empty($item)) {
       return $this->handleView($this->view(['error' => 'entity not found'], Response::HTTP_NOT_FOUND));
     }
 
@@ -43,43 +50,73 @@ class ItemController extends AbstractFOSRestController
   }
 
   /**
+   * Löscht einen Artikel anhand einer Id
+   *
    * @Rest\Delete("/item/{id}")
    *
    * @return Response
    */
-  public function deleteAction($id)
+  public function deleteAction($id): Response
   {
-    $repository = $this->getDoctrine()->getRepository(Item::class);
-    $item = $repository->find($id);
-    if(empty($item)) {
+    $entityManager = $this->getDoctrine()->getManager();
+    $item = $entityManager->find(Item::class, $id);
+    if (empty($item)) {
       return $this->handleView($this->view(['error' => 'entity not found'], Response::HTTP_NOT_FOUND));
     }
 
-    $manager = $this->getDoctrine()->getManagerForClass(Item::class);
-    $manager->remove($item);
-    $manager->flush();
+    $entityManager->remove($item);
+    $entityManager->flush();
 
     return $this->handleView($this->view(['Success' => 'true'], Response::HTTP_OK));
   }
 
   /**
-   * Create Item.
+   * Überschreibt einen Artikel mit neuen Daten
+   *
+   * @Rest\Put("/item/{id}")
+   *
+   * @return Response
+   */
+  public function putAction($id, Request $request): Response
+  {
+    $entityManager = $this->getDoctrine()->getManager();
+    $item = $entityManager->find(Item::class, $id);
+    if (empty($item)) {
+      return $this->handleView($this->view(['error' => 'entity not found'], Response::HTTP_NOT_FOUND));
+    }
+
+    $data = json_decode($request->getContent(), true);
+    $item->setName($data['name'])
+      ->setDescription($data['description'])
+      ->setModified(new \DateTime());
+
+    $entityManager = $this->getDoctrine()->getManager();
+    $entityManager->persist($item);
+    $entityManager->flush();
+
+    return $this->handleView($this->view(['status' => 'ok'], Response::HTTP_OK));
+  }
+
+  /**
+   * Erstellt einen Artikel
+   *
    * @Rest\Post("/item")
    *
    * @return Response
    */
-  public function postItemAction(Request $request)
+  public function postItemAction(Request $request): Response
   {
     $item = new Item();
-    $form = $this->createForm(ItemType::class, $item);
     $data = json_decode($request->getContent(), true);
-    $form->submit($data);
-    if ($form->isSubmitted() && $form->isValid()) {
-      $em = $this->getDoctrine()->getManager();
-      $em->persist($item);
-      $em->flush();
-      return $this->handleView($this->view(['status' => 'ok'], Response::HTTP_CREATED));
-    }
-    return $this->handleView($this->view($form->getErrors()));
+
+    $item->setName($data['name'])
+      ->setDescription($data['description'])
+      ->setCreated(new \DateTime());
+
+    $entityManager = $this->getDoctrine()->getManager();
+    $entityManager->persist($item);
+    $entityManager->flush();
+
+    return $this->handleView($this->view(['status' => 'ok'], Response::HTTP_CREATED));
   }
 }

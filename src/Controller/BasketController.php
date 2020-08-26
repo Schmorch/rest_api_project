@@ -1,42 +1,48 @@
 <?php
 namespace App\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+
+use App\Entity;
+use App\Form\BasketType;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use App\Entity\Basket;
-use App\Form\BasketType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
 /**
- * Basket controller.
+ * Warenkorb Controller
+ *
  * @Route("/api", name="api_")
  */
 class BasketController extends AbstractFOSRestController
 {
   /**
-   * Lists all Baskets.
+   * Gibt eine Liste aller Warenkörbe zurück
+   *
    * @Rest\Get("/baskets")
    *
    * @return Response
    */
-  public function getAllAction()
+  public function getAllAction(): Response
   {
-    $repository = $this->getDoctrine()->getRepository(Basket::class);
-    $baskets = $repository->findall();
+    $repository = $this->getDoctrine()->getRepository(Entity\Basket::class);
+    $baskets = $repository->findAll();
 
     return $this->handleView($this->view($baskets));
   }
 
   /**
+   * Gibt einen Warenkorb anhand einer Id zurück
+   *
    * @Rest\Get("/basket/{id}")
    *
    * @return Response
    */
-  public function getOneAction($id)
+  public function getOneAction($id): Response
   {
-    $repository = $this->getDoctrine()->getRepository(Basket::class);
-    $basket = $repository->find($id);
-    if(empty($basket)) {
+    $entityManager = $this->getDoctrine()->getManager();
+    $basket = $entityManager->find(Entity\Basket::class, $id);
+    if (empty($basket)) {
       return $this->handleView($this->view(['error' => 'entity not found'], Response::HTTP_NOT_FOUND));
     }
 
@@ -44,45 +50,68 @@ class BasketController extends AbstractFOSRestController
   }
 
   /**
+   * Löscht einen Warenkorb anhand einer Id
+   *
    * @Rest\Delete("/basket/{id}")
    *
    * @return Response
    */
-  public function deleteAction($id)
+  public function deleteAction($id): Response
   {
-    $repository = $this->getDoctrine()->getRepository(Basket::class);
-    $basket = $repository->find($id);
-    if(empty($basket)) {
+    $entityManager = $this->getDoctrine()->getManager();
+    $basket = $entityManager->find(Entity\Basket::class, $id);
+    if (empty($basket)) {
       return $this->handleView($this->view(['error' => 'entity not found'], Response::HTTP_NOT_FOUND));
     }
 
-    $manager = $this->getDoctrine()->getManagerForClass(Basket::class);
-    $manager->remove($basket);
-    $manager->flush();
+    $entityManager->remove($basket);
+    $entityManager->flush();
 
     return $this->handleView($this->view(['Success' => 'true'], Response::HTTP_OK));
   }
 
   /**
-   * Create Basket.
+   * Überschreibt einen Warenkorb mit neuen Daten
+   *
+   * @Rest\Put("/basket/{id}")
+   *
+   * @return Response
+   */
+  public function putAction($id, Request $request): Response
+  {
+    $entityManager = $this->getDoctrine()->getManager();
+    $basket = $entityManager->find(Entity\Basket::class, $id);
+    if (empty($basket)) {
+      return $this->handleView($this->view(['error' => 'entity not found'], Response::HTTP_NOT_FOUND));
+    }
+
+    $data = json_decode($request->getContent(), true);
+    $basket->setModified(new \DateTime());
+
+    $entityManager->persist($basket);
+    $entityManager->flush();
+
+    return $this->handleView($this->view(['status' => 'ok'], Response::HTTP_OK));
+  }
+
+  /**
+   * Erstellt einen neuen Warenkorb
+   *
    * @Rest\Post("/basket")
    *
    * @return Response
    */
-  public function postBasketAction(Request $request)
+  public function postBasketAction(Request $request): Response
   {
-    $basket = new Basket();
-    $form = $this->createForm(BasketType::class, $basket);
     $data = json_decode($request->getContent(), true);
-    $form->submit($data);
-    if ($form->isSubmitted() && $form->isValid()) {
-      $em = $this->getDoctrine()->getManager();
-      $em->persist($basket);
-      $em->flush();
 
-      return $this->handleView($this->view(['status' => 'ok'], Response::HTTP_CREATED));
-    }
+    $basket = new Entity\Basket();
+    $basket->setCreated(new \DateTime());
 
-    return $this->handleView($this->view($form->getErrors()));
+    $entityManager = $this->getDoctrine()->getManager();
+    $entityManager->persist($basket);
+    $entityManager->flush();
+
+    return $this->handleView($this->view(['status' => 'ok'], Response::HTTP_CREATED));
   }
 }
